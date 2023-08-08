@@ -15,20 +15,20 @@ var death_outside_box:Rect2 = Rect2()
 var death_from_collision:bool = true
 
 ## animations
-var anim_idle_sfx:int = -1 #TODO change to string
-var anim_spawn_sfx:int = -1
-var anim_waiting_sfx:int = -1
-var anim_delete_sfx:int = -1
+var sfx_idle:String = "" #TODO change to string
+var sfx_spawn:String = "" 
+var sfx_waiting:String = "" 
+var sfx_delete:String = "" 
 
 ## movement
 enum CURVE_TYPE{None,LoopFromStart,OnceThenDie,OnceThenStay,LoopFromEnd}
-var a_direction_equation = ""
-var a_angular_equation = ""
-var a_curve_movement:int = CURVE_TYPE.None
+var movement_direction_equation = ""
+var movement_angular_equation = ""
+var movement_curve_movement:int = CURVE_TYPE.None
 var curve:Curve2D = null
-var a_speed_multiplier:Curve = Curve.new()
-var a_speed_multi_iterations = 0
-var a_speed_multi_scale:float
+var movement_speed_multiplier:Curve = Curve.new()
+var movement_speed_multi_iterations = 0
+var movement_speed_multi_scale:float
 
 ## special props
 var spec_bounces = 0
