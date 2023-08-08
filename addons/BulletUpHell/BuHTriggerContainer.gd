@@ -113,7 +113,7 @@ func isTriggerChecked(list, b, isNode:bool) -> Array:
 	else: ok = checkTrigger(b, list, isNode)
 	return [ok, cond_index]
 
-func checkTriggers(b, rid):
+func check_trigger(b, rid) -> bool:
 	if b["trigger_counter"] < 0: return false
 	var trigger_counter:int
 	if b is Dictionary: trigger_counter = b["trigger_counter"]
@@ -128,6 +128,7 @@ func checkTriggers(b, rid):
 		if trigger_counter+1 < commands.size():
 			updateBase(b, list, trigger_counter, rid, isNode)
 		else: return true
+	return false
 
 func updateBase(b, list, trigger_counter:int, rid, isNode:bool):
 	list = commands[trigger_counter+1].split(">")
