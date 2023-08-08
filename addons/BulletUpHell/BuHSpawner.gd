@@ -107,7 +107,7 @@ func reset(minimal:bool=false):
 			for elem in array.keys():
 				if elem[0] == "@": continue
 				array.erase(elem)
-	
+
 
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint(): return
@@ -116,6 +116,7 @@ func _process(delta: float) -> void:
 	if not cull_fixed_screen:
 		viewrect = Rect2(-get_canvas_transform().get_origin()/get_canvas_transform().get_scale(), \
 							get_viewport_rect().size/get_canvas_transform().get_scale())
+
 
 func _physics_process(delta: float) -> void:
 	if Engine.is_editor_hint(): return
@@ -135,16 +136,20 @@ func _physics_process(delta: float) -> void:
 		poolQueue.pop_front()
 		poolTimes.pop_front()
 
+
 func change_scene_to_file(file:String):
 	reset_bullets()
 	get_tree().change_scene_to_file(file)
+
 
 func change_scene_to_packed(scene:PackedScene):
 	reset_bullets()
 	get_tree().change_scene_to_packed(scene)
 
+
 func reset_bullets():
 	clear_all_bullets()
+
 
 func new_instance(id:String, instance:Node2D):
 	if arrayInstances.has(id):
@@ -189,7 +194,6 @@ func container(id:String):
 	return arrayContainers[id]
 
 
-
 func create_pool(bullet:String, shared_area:String, amount:int, object:bool=false):
 	var props:Dictionary = arrayProps[bullet]
 	if not inactive_pool.has(bullet):
@@ -227,6 +231,7 @@ func wake_from_pool(bullet:String, queued_instance:Dictionary, shared_area:Strin
 	else:
 		return inactive_pool[bullet].pop_at(0)
 
+
 func back_to_grave(bullet:String, bID):
 	inactive_pool[bullet].append([bID, poolBullets[bID]["shared_area"].name])
 #	poolBullets.erase(bID)
@@ -236,9 +241,11 @@ func back_to_grave(bullet:String, bID):
 
 
 func set_angle(pattern:NavigationPolygon, pos:Vector2, queued_instance:Dictionary):
-	if pattern.forced_target != NodePath():
-		if pattern.forced_pattern_lookat: queued_instance["rotation"] = pos.angle_to_point(pattern.node_target.global_position)
-		else: queued_instance["rotation"] = (pattern.node_target.global_position-queued_instance["spawn_pos"]).angle()
+	if pattern.forced_target != null:
+		if pattern.forced_pattern_lookat: 
+			queued_instance["rotation"] = pos.angle_to_point(pattern.forced_target.global_position)
+		else:
+			queued_instance["rotation"] = (pattern.forced_target.global_position-queued_instance["spawn_pos"]).angle()
 	elif pattern.forced_lookat_mouse:
 		if pattern.forced_pattern_lookat: queued_instance["rotation"] = pos.angle_to_point(get_global_mouse_position())
 		else: queued_instance["rotation"] = (pos+queued_instance["spawn_pos"]).angle_to_point(get_global_mouse_position())
@@ -248,6 +255,7 @@ func set_angle(pattern:NavigationPolygon, pos:Vector2, queued_instance:Dictionar
 		else:
 			queued_instance["rotation"] = pattern.forced_angle
 
+
 func create_bullet_instance_dict(queued_instance:Dictionary, bullet_props:Dictionary, pattern:NavigationPolygon, l:int):
 	queued_instance["shape_disabled"] = true
 	if pattern.bullet in no_culling_for: queued_instance["no_culling"] = true
@@ -256,6 +264,7 @@ func create_bullet_instance_dict(queued_instance:Dictionary, bullet_props:Dictio
 	if bullet_props.has("groups"): queued_instance["groups"] = bullet_props.get("groups")
 	if pattern.follows_parent: queued_instance["follows_parent"] = true
 	return queued_instance
+
 
 func set_spawn_data(queued_instance:Dictionary, bullet_props:Dictionary, pattern:NavigationPolygon, l:int, i:int, ori_angle:float):
 	var angle:float
@@ -483,7 +492,7 @@ func unactive_spawn(bullets:Array):
 func _spawn(bullets:Array):
 	var B:Dictionary
 	for b in bullets:
-		if not poolBullets.has(b):
+		if !poolBullets.has(b):
 			push_error("Warning: Bullet of ID "+str(b)+" is missing.")
 			continue
 		#assert(poolBullets.has(b))
@@ -496,7 +505,7 @@ func _spawn(bullets:Array):
 		if b is Node2D: # scene spawning
 			_spawn_object(b, B)
 			
-		if b is RID or B["props"].has("speed"):
+		if b is RID || B["props"].has("speed"):
 			if !change_animation(B,"spawn",b): B["state"] = BState.Spawning
 			else: B["state"] = BState.Spawned
 			if B["props"].has("sfx_spawn"): $SFX.get_child(B["props"]["sfx_spawn"]).play()
@@ -524,9 +533,9 @@ func use_momentum(pos:Vector2, B:Dictionary):
 func _shoot(bullets:Array):
 	var B:Dictionary
 	for b in bullets:
-		if not poolBullets.has(b): continue
+		if !poolBullets.has(b): continue
 		B = poolBullets[b]
-		if (not b is RID and not B["props"].has("speed")):
+		if (!(b is RID) && !B["props"].has("speed")):
 			poolBullets.erase(b)
 			continue
 		if check_bullet_culling(B,b): continue
@@ -537,8 +546,10 @@ func _shoot(bullets:Array):
 		
 		B["state"] = BState.Moving
 		
-		if B.get("follows_parent", false): B.erase("follows_parent")
-		elif not B["props"].has("curve"): B.erase("spawn_pos")
+		if B.get("follows_parent", false):
+			B.erase("follows_parent")
+		elif not B["props"].has("curve"): 
+			B.erase("spawn_pos")
 		
 		if B["props"].has("homing_target") or B["props"].has("node_homing"):
 			if B["props"].get("homing_time_start",0) > 0:
@@ -553,15 +564,15 @@ func _shoot(bullets:Array):
 
 func init_special_variables(b:Dictionary, rid):
 	var bp = b["props"]
-	if bp.has("a_speed_multi_iterations"):
-		b['speed_multi_iter'] = bp["a_speed_multi_iterations"]
+	if bp.has("movement_speed_multi_iterations"):
+		b['speed_multi_iter'] = bp["movement_speed_multi_iterations"]
 		b['speed_interpolate'] = float(0)
 	if bp.has("scale_multi_iterations"):
 		b['scale_multi_iter'] = bp["scale_multi_iterations"]
 		b['scale_interpolate'] = float(0)
 	if bp.has("spec_bounces"):
 		b['bounces'] = bp["spec_bounces"]
-	if bp.has("a_direction_equation"):
+	if bp.has("movement_direction_equation"):
 		b['curve'] = float(0)
 		b['curveDir_index'] = float(0)
 	if bp.has("spec_modulate_loop"): b["modulate_index"] = float(0)
@@ -1171,6 +1182,7 @@ func create_random_props(original:Dictionary) -> Dictionary:
 		else:
 			res[p] = original[p]
 	return res
+
 
 func match_rand_prop(original:String) -> String:
 	match original:

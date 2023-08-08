@@ -11,7 +11,7 @@ var preview_bullet:BulletProps
 
 func _ready():
 	if not Engine.is_editor_hint() and pattern:
-		if pattern.forced_target: pattern.node_target = get_node(pattern.forced_target)
+		
 		if pattern.resource_name in ["PatternCustomShape","PatternCustomPoints"]:
 			pattern.shape = curve
 		if pattern.resource_name == "PatternCustomShape":
@@ -36,7 +36,7 @@ func _ready():
 			var angle;
 			for point in point_count:
 				var pos = curve.get_point_position(point)
-				if pattern.calculate_angles == pattern.ANGLE_TYPE.FromTangeant:
+				if pattern.calculate_angles == pattern.ANGLE_TYPE.FROM_TANGEANT:
 					if point == point_count-1:
 						angle = pos.angle_to_point(curve.get_point_position(point-1))+PI/2
 					elif point == 0: angle = curve.get_point_position(point+1).angle_to_point(pos)+PI/2
@@ -44,7 +44,7 @@ func _ready():
 				elif pattern.calculate_angles == pattern.ANGLE_TYPE.FromCenter:
 					angle = pattern.center_pos.angle_to_point(pos)+PI
 				pattern.pos.append(pos-pattern.center_pos)
-				if pattern.calculate_angles != pattern.ANGLE_TYPE.Custom: pattern.angles.append(angle+(PI*int(pattern.reversed_angle)))
+				if pattern.calculate_angles != pattern.ANGLE_TYPE.CUSTOM: pattern.angles.append(angle+(PI*int(pattern.reversed_angle)))
 		
 		elif pattern.resource_name == "PatternCustomArea":
 			curve_to_polygon()
