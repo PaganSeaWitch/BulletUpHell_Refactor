@@ -200,7 +200,7 @@ func create_pool(bullet:String, shared_area:String, amount:int, object:bool=fals
 		for i in amount:
 			inactive_pool[bullet].append(instance(props["instance_id"]).duplicate())
 	else:
-		var colID:String = props.get("anim_spawn_collision_texture", props["anim_idle_collision_texture"])
+		var colID:String = props.get("anim_spawn_collision", props["anim_idle_collision"])
 		var shared_rid:RID = get_shared_area_rid(shared_area)
 		var count:int = Phys.area_get_shape_count(shared_rid)
 		$SharedAreas.get_node(shared_area).set_meta("ShapeCount", $SharedAreas.get_node(shared_area).get_meta("ShapeCount", 0)+amount) # Warning, bad sync possible ?
@@ -308,8 +308,8 @@ func spawn(spawner, id:String, shared_area:String="0"):
 				queued_instance["props"] = bullet_props
 				queued_instance["source_node"] = spawner
 				queued_instance["state"] = BState.Unactive
-				if not is_object:
-					queued_instance["colID"] = bullet_props.get("anim_spawn_collision_texture", bullet_props["anim_idle_collision_texture"])
+				if !is_object:
+					queued_instance["colID"] = bullet_props.get("anim_spawn_collision", bullet_props["anim_idle_collision"])
 					queued_instance = create_bullet_instance_dict(queued_instance, bullet_props, pattern, l)
 				elif is_bullet_node: queued_instance = create_bullet_instance_dict(queued_instance, bullet_props, pattern, l)
 				
@@ -499,7 +499,7 @@ func _spawn(bullets:Array):
 		if b is RID or B["props"].has("speed"):
 			if !change_animation(B,"spawn",b): B["state"] = BState.Spawning
 			else: B["state"] = BState.Spawned
-			if B["props"].has("anim_spawn_sfx"): $SFX.get_child(B["props"]["anim_spawn_sfx"]).play()
+			if B["props"].has("sfx_spawn"): $SFX.get_child(B["props"]["sfx_spawn"]).play()
 			
 			init_special_variables(B,b)
 			if B["props"].get("homing_select_in_group",-1) == GROUP_SELECT.Nearest_on_spawn:
@@ -548,7 +548,7 @@ func _shoot(bullets:Array):
 			target_from_options(B)
 		
 		if !change_animation(B,"shoot",b): B["state"] = BState.Shooting
-		if B["props"].has("anim_shoot_sfx"): $SFX.get_child(B["props"]["anim_shoot_sfx"]).play()
+		if B["props"].has("sfx_shoot"): $SFX.get_child(B["props"]["sfx_shoot"]).play()
 		
 
 func init_special_variables(b:Dictionary, rid):
@@ -655,10 +655,10 @@ func _draw():
 
 # type = "idle","spawn","waiting","delete"
 func change_animation(b:Dictionary, type:String, B):
-	var anim_id = b["props"].get("anim_"+type+"_texture","")
+	var anim_id = b["props"].get("anim_"+type,"")
 	var instantly = false
 	if anim_id == "":
-		anim_id = b["props"].get("anim_idle_texture")
+		anim_id = b["props"].get("anim_idle")
 		instantly = true
 		
 	if anim_id == null: return instantly
@@ -677,7 +677,7 @@ func change_animation(b:Dictionary, type:String, B):
 		b.erase("anim_loop")
 		b.erase("anim_speed")
 	
-	var col_id = b["props"].get("anim_"+type+"_collision_texture","")
+	var col_id = b["props"].get("anim_"+type+"_collision","")
 	if col_id != "" and col_id != b["colID"]:
 		b["colID"] = col_id
 		poolBullets[create_shape(b["shared_area"].get_rid(), b["colID"])] = b
@@ -725,7 +725,7 @@ func clear_all_offscreen_bullets():
 func delete_bullet(b):
 	if not poolBullets.has(b): return
 	var B = poolBullets[b]
-	if B["props"].has("anim_delete_sfx"): $SFX.get_child(B["props"]["anim_delete_sfx"]).play()
+	if B["props"].has("sfx_delete"): $SFX.get_child(B["props"]["sfx_delete"]).play()
 #	if not B["props"].has("instance_id"):
 #		B["shared_area"].set_meta("ShapeCount", Phys.area_get_shape_count(B["shared_area"].get_rid()))
 #		B["shared_area"].set_meta("ShapeCount", B["shared_area"].get_meta("ShapeCount")-1)
@@ -741,8 +741,10 @@ func get_bullets_in_radius(origin:Vector2, radius:float):
 func get_shared_area_rid(shared_area_name:String):
 	return $SharedAreas.get_node(shared_area_name).get_rid()
 
-func get_shared_area(shared_area_name:String):
+
+func get_shared_area(shared_area_name:String) -> Area2D:
 	return $SharedAreas.get_node(shared_area_name)
+
 
 func change_shared_area(b:Dictionary, rid:RID, idx:int, new_area:Area2D):
 	Phys.area_remove_shape(b["shared_area"].get_rid(),idx)
@@ -1031,8 +1033,8 @@ func bullet_movement(delta:float):
 func _on_Homing_timeout(B:Dictionary, start:bool):
 	if start:
 		var props = B["props"]
-		if not props.has("homing_mouse"):
-			if props.has("homing_target") or props.has("node_homing"): B["homing_target"] = props["node_homing"]
+		if !props.has("homing_mouse"):
+			if props.has("homing_target") || props.has("node_homing"): B["homing_target"] = props["node_homing"]
 			else: B["homing_target"] = props["homing_position"]
 		if props["homing_duration"] > 0:
 			get_tree().create_timer(props["homing_duration"]).connect("timeout",Callable(self,"_on_Homing_timeout").bind(B,false))
@@ -1166,6 +1168,8 @@ func create_random_props(original:Dictionary) -> Dictionary:
 			res[p] = get_variation(original[p],variation.x,variation.y,variation.z)
 		elif original.has(r_name+"_chance"):
 			res[p] = randf_range(0,1) < original[r_name+"_chance"]
+		else:
+			res[p] = original[p]
 	return res
 
 func match_rand_prop(original:String) -> String:
@@ -1175,11 +1179,11 @@ func match_rand_prop(original:String) -> String:
 		"angle": return "r_angle"
 		"groups": return "r_groups"
 		"death_after_time": return "r_death_after"
-		"anim_idle_texture": return "r_" #-----------------------
-		"a_direction_equation": return "r_dir_equation"
+		"anim_idle": return "r_" #-----------------------
+		"movement_direction_equation": return "r_dir_equation"
 		"curve": return "r_curve"
-		"a_speed_multiplier": return "r_speed_multi_curve"
-		"a_speed_multi_iterations": return "r_speed_multi_iter"
+		"movement_speed_multiplier": return "r_speed_multi_curve"
+		"movement_speed_multi_iterations": return "r_speed_multi_iter"
 		"spec_bounces": return "r_bounce"
 #		"spec_no_collision": return "r_"
 		"spec_modulate": return "r_modulate"
