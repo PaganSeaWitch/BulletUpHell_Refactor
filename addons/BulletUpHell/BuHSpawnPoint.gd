@@ -71,7 +71,7 @@ func _ready():
 	
 	if active && pool_amount > 0:
 		var props = Spawning.pattern(auto_pattern_id)["bullet"]
-		Spawning.create_pool(props, shared_area_name, pool_amount, !Spawning.bullet(props).has("anim_idle_collision_texture"))
+		Spawning.create_pool(props, shared_area_name, pool_amount, !Spawning.bullet(props).has("anim_idle_collision"))
 		
 
 #		set_physics_process(false)
