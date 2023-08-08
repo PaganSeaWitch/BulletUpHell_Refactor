@@ -1,20 +1,22 @@
 @tool
-@icon("res://addons/BulletUpHell/Sprites/NodeIcons9.png")
+@icon("res://addons/BulletUpHell/Sprites/NodeIcons16.png")
 extends NavigationPolygon
-class_name PatternCustomShape
+class_name PatternCustomPoints
 
+enum ANGLE_TYPE{FromTangeant,FromCenter,Custom}
 var shape:Curve2D
+var calculate_angles:int = ANGLE_TYPE.FromTangeant
 var angles:Array = []
 var pos:Array = []
-
-var closed_shape = false
 var center_pos:Vector2
+var reversed_angle:bool=false
+enum SYMTYPE{ClosedShape,Line}
 var symmetric:bool = false
 var center:int = 0
-var symmetry_type = 1
+var symmetry_type = SYMTYPE.ClosedShape
 
+var nbr:int
 var bullet:String = ""
-var nbr:int = 2
 var pattern_angle:float = 0
 var iterations:int = 1
 var forced_angle:float = 0.0
@@ -50,12 +52,8 @@ var layer_angle_offset:float = 0
 
 
 var r_randomisation_chances:float=1
-var r_radius_choice:String
-var r_radius_variation:Vector3
-var r_angle_total_choice:String
-var r_angle_total_variation:Vector3
-var r_angle_decal_choice:String
-var r_angle_decal_variation:Vector3
+var r_reversed_chances:float=0
+var r_angles_choice:Array = []
 var r_symmetry_chances:float=0
 var r_bullet_choice:String
 var r_bullet_nbr_choice:String
@@ -66,7 +64,7 @@ var r_infinite_iter_chances:float=0
 var r_iterations_choice:String
 var r_iterations_variation:Vector3
 var r_forced_angle_choice:String
-var r_forced_angle_variation:Vector3
+var r_forced_angle_variation:float
 var r_forced_target_choice:Array
 var r_stasis_chances:float=0
 var r_cooldown_spawn_choice:String
@@ -88,18 +86,22 @@ func _get_property_list() -> Array:
 			type = TYPE_STRING,
 			usage = PROPERTY_USAGE_DEFAULT
 		},{
-			name = "nbr",
-			type = TYPE_INT,
-			hint = PROPERTY_HINT_RANGE,
-			hint_string = "2, 999999",
-			usage = PROPERTY_USAGE_DEFAULT
-		},{
-			name = "closed_shape",
-			type = TYPE_BOOL,
-			usage = PROPERTY_USAGE_DEFAULT
-		},{
 			name = "center_pos",
 			type = TYPE_VECTOR2,
+			usage = PROPERTY_USAGE_DEFAULT
+		},{
+			name = "angles",
+			type = TYPE_ARRAY,
+			usage = PROPERTY_USAGE_DEFAULT
+		},{
+			name = "calculate_angles",
+			type = TYPE_INT,
+			hint = PROPERTY_HINT_ENUM,
+			hint_string = ANGLE_TYPE,
+			usage = PROPERTY_USAGE_DEFAULT
+		},{
+			name = "reversed_angle",
+			type = TYPE_BOOL,
 			usage = PROPERTY_USAGE_DEFAULT
 		},{
 			name = "pattern_angle",
@@ -114,6 +116,12 @@ func _get_property_list() -> Array:
 		},{
 			name = "center",
 			type = TYPE_INT,
+			usage = PROPERTY_USAGE_DEFAULT
+		},{
+			name = "symmetry_type",
+			type = TYPE_INT,
+			hint = PROPERTY_HINT_ENUM,
+			hint_string = SYMTYPE,
 			usage = PROPERTY_USAGE_DEFAULT
 		},{
 			name = "iterations",
@@ -233,6 +241,9 @@ func _get_property_list() -> Array:
 		},
 		{ name = "r_randomisation_chances", type = TYPE_FLOAT,
 			hint = PROPERTY_HINT_RANGE, hint_string = "0, 1", usage = PROPERTY_USAGE_DEFAULT },
+		{ name = "r_reversed_chances", type = TYPE_FLOAT,
+			hint = PROPERTY_HINT_RANGE, hint_string = "0, 1", usage = PROPERTY_USAGE_DEFAULT },
+		{ name = "r_angles_choice", type = TYPE_ARRAY, usage = PROPERTY_USAGE_DEFAULT },
 		{ name = "r_symmetry_chances", type = TYPE_FLOAT,
 			hint = PROPERTY_HINT_RANGE, hint_string = "0, 1", usage = PROPERTY_USAGE_DEFAULT },
 		{ name = "r_bullet_choice", type = TYPE_ARRAY, usage = PROPERTY_USAGE_DEFAULT },
@@ -259,7 +270,7 @@ func _get_property_list() -> Array:
 		{ name = "r_cooldown_n_shoot_variation", type = TYPE_VECTOR3, usage = PROPERTY_USAGE_DEFAULT }]
 
 func _init():
-	resource_name = "PatternCustomShape"
+	resource_name = "PatternCustomPoints"
 
 #func _get_property_list() -> Array:
 #	return [

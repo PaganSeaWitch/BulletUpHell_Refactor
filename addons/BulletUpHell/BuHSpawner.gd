@@ -200,7 +200,7 @@ func create_pool(bullet:String, shared_area:String, amount:int, object:bool=fals
 		for i in amount:
 			inactive_pool[bullet].append(instance(props["instance_id"]).duplicate())
 	else:
-		var colID:String = props.get("anim_spawn_collision", props["anim_idle_collision"])
+		var colID:String = props.get("anim_spawn_collision_texture", props["anim_idle_collision_texture"])
 		var shared_rid:RID = get_shared_area_rid(shared_area)
 		var count:int = Phys.area_get_shape_count(shared_rid)
 		$SharedAreas.get_node(shared_area).set_meta("ShapeCount", $SharedAreas.get_node(shared_area).get_meta("ShapeCount", 0)+amount) # Warning, bad sync possible ?
@@ -243,7 +243,10 @@ func set_angle(pattern:NavigationPolygon, pos:Vector2, queued_instance:Dictionar
 		if pattern.forced_pattern_lookat: queued_instance["rotation"] = pos.angle_to_point(get_global_mouse_position())
 		else: queued_instance["rotation"] = (pos+queued_instance["spawn_pos"]).angle_to_point(get_global_mouse_position())
 	elif pattern.forced_angle != 0.0:
-		queued_instance["rotation"] = pattern.forced_angle
+		if(pattern.r_forced_angle_variation != 0.0):
+			queued_instance["rotation"] = max(-3.1416,min(3.1416,pattern.forced_angle + randf_range(-1 * pattern.r_forced_angle_variation,pattern.r_forced_angle_variation)))
+		else:
+			queued_instance["rotation"] = pattern.forced_angle
 
 func create_bullet_instance_dict(queued_instance:Dictionary, bullet_props:Dictionary, pattern:NavigationPolygon, l:int):
 	queued_instance["shape_disabled"] = true
@@ -306,7 +309,7 @@ func spawn(spawner, id:String, shared_area:String="0"):
 				queued_instance["source_node"] = spawner
 				queued_instance["state"] = BState.Unactive
 				if not is_object:
-					queued_instance["colID"] = bullet_props.get("anim_spawn_collision", bullet_props["anim_idle_collision"])
+					queued_instance["colID"] = bullet_props.get("anim_spawn_collision_texture", bullet_props["anim_idle_collision_texture"])
 					queued_instance = create_bullet_instance_dict(queued_instance, bullet_props, pattern, l)
 				elif is_bullet_node: queued_instance = create_bullet_instance_dict(queued_instance, bullet_props, pattern, l)
 				
@@ -466,6 +469,7 @@ func _spawn_and_shoot(to_spawn:Array, to_shoot:Array):
 	_spawn(to_spawn)
 	_shoot(to_shoot)
 
+
 func unactive_spawn(bullets:Array):
 	var B:Dictionary
 	for b in bullets:
@@ -474,6 +478,7 @@ func unactive_spawn(bullets:Array):
 		if B["state"] >= BState.Moving: continue
 		if B["source_node"] is RID: B["position"] = B["spawn_pos"] + poolBullets[B["source_node"]]["position"]
 		else: B["position"] = B["spawn_pos"] + B["source_node"].global_position
+
 
 func _spawn(bullets:Array):
 	var B:Dictionary
@@ -492,7 +497,7 @@ func _spawn(bullets:Array):
 			_spawn_object(b, B)
 			
 		if b is RID or B["props"].has("speed"):
-			if not change_animation(B,"spawn",b): B["state"] = BState.Spawning
+			if !change_animation(B,"spawn",b): B["state"] = BState.Spawning
 			else: B["state"] = BState.Spawned
 			if B["props"].has("anim_spawn_sfx"): $SFX.get_child(B["props"]["anim_spawn_sfx"]).play()
 			
@@ -502,6 +507,7 @@ func _spawn(bullets:Array):
 #				print(B)
 		else: poolBullets.erase(b)
 
+
 func _spawn_object(b:Node2D, B:Dictionary):
 	b.global_position = B["spawn_pos"]
 	b.rotation += B["rotation"]
@@ -510,8 +516,10 @@ func _spawn_object(b:Node2D, B:Dictionary):
 		b.collision_mask = B["shared_area"].collision_mask
 	B["source_node"].call_deferred("add_child", b)
 
+
 func use_momentum(pos:Vector2, B:Dictionary):
 	B["position"] = pos
+
 
 func _shoot(bullets:Array):
 	var B:Dictionary
@@ -539,7 +547,7 @@ func _shoot(bullets:Array):
 		if B["props"].get("homing_select_in_group",-1) == GROUP_SELECT.Nearest_on_shoot:
 			target_from_options(B)
 		
-		if not change_animation(B,"shoot",b): B["state"] = BState.Shooting
+		if !change_animation(B,"shoot",b): B["state"] = BState.Shooting
 		if B["props"].has("anim_shoot_sfx"): $SFX.get_child(B["props"]["anim_shoot_sfx"]).play()
 		
 
@@ -644,6 +652,7 @@ func _draw():
 			for l in 3:
 				draw_line(b["trail"][l],b["trail"][l+1],b["props"]["spec_trail_modulate"],b["props"]["spec_trail_width"])
 
+
 # type = "idle","spawn","waiting","delete"
 func change_animation(b:Dictionary, type:String, B):
 	var anim_id = b["props"].get("anim_"+type+"_texture","")
@@ -668,7 +677,7 @@ func change_animation(b:Dictionary, type:String, B):
 		b.erase("anim_loop")
 		b.erase("anim_speed")
 	
-	var col_id = b["props"].get("anim_"+type+"_collision","")
+	var col_id = b["props"].get("anim_"+type+"_collision_texture","")
 	if col_id != "" and col_id != b["colID"]:
 		b["colID"] = col_id
 		poolBullets[create_shape(b["shared_area"].get_rid(), b["colID"])] = b

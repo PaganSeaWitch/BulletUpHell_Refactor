@@ -63,7 +63,7 @@ func _ready():
 		
 	if active and pool_amount > 0:
 		var props = Spawning.pattern(auto_pattern_id)["bullet"]
-		Spawning.create_pool(props, shared_area_name, pool_amount, !Spawning.bullet(props).has("anim_idle_collision"))
+		Spawning.create_pool(props, shared_area_name, pool_amount, !Spawning.bullet(props).has("anim_idle_collision_texture"))
 		
 	if trigger_container:
 		trig_container = get_node(trigger_container)

@@ -1,17 +1,20 @@
 @tool
-@icon("res://addons/BulletUpHell/Sprites/NodeIcons7.png")
+@icon("res://addons/BulletUpHell/Sprites/NodeIcons9.png")
 extends NavigationPolygon
-class_name PatternLine
+class_name PatternCustomShape
 
+var shape:Curve2D
+var angles:Array = []
+var pos:Array = []
 
-var offset = Vector2()
-var center = 1
-var symmetric = true
+var closed_shape = false
+var center_pos:Vector2
+var symmetric:bool = false
+var center:int = 0
 var symmetry_type = 1
 
-
 var bullet:String = ""
-var nbr:int = 1
+var nbr:int = 2
 var pattern_angle:float = 0
 var iterations:int = 1
 var forced_angle:float = 0.0
@@ -45,11 +48,14 @@ var layer_speed_offset:float = 0
 var layer_angle_offset:float = 0
 
 
+
 var r_randomisation_chances:float=1
-var r_offset_choice:String
-var r_offset_x_variation:Vector3
-var r_offset_y_variation:Vector3
-var r_center_choice:String
+var r_radius_choice:String
+var r_radius_variation:Vector3
+var r_angle_total_choice:String
+var r_angle_total_variation:Vector3
+var r_angle_decal_choice:String
+var r_angle_decal_variation:Vector3
 var r_symmetry_chances:float=0
 var r_bullet_choice:String
 var r_bullet_nbr_choice:String
@@ -60,7 +66,7 @@ var r_infinite_iter_chances:float=0
 var r_iterations_choice:String
 var r_iterations_variation:Vector3
 var r_forced_angle_choice:String
-var r_forced_angle_variation:Vector3
+var r_forced_angle_variation:float
 var r_forced_target_choice:Array
 var r_stasis_chances:float=0
 var r_cooldown_spawn_choice:String
@@ -75,24 +81,9 @@ var r_cooldown_n_shoot_variation:Vector3
 var has_random
 var node_target:Node2D
 
-
 func _get_property_list() -> Array:
 	return [
 		{
-			name = "offset",
-			type = TYPE_VECTOR2,
-			usage = PROPERTY_USAGE_DEFAULT
-		},{
-			name = "center",
-			type = TYPE_INT,
-			hint = PROPERTY_HINT_RANGE,
-			hint_string = "1, 1000000",
-			usage = PROPERTY_USAGE_DEFAULT
-		},{
-			name = "symmetrical",
-			type = TYPE_BOOL,
-			usage = PROPERTY_USAGE_DEFAULT
-		},{
 			name = "bullet",
 			type = TYPE_STRING,
 			usage = PROPERTY_USAGE_DEFAULT
@@ -100,13 +91,29 @@ func _get_property_list() -> Array:
 			name = "nbr",
 			type = TYPE_INT,
 			hint = PROPERTY_HINT_RANGE,
-			hint_string = "0, 999999",
+			hint_string = "2, 999999",
+			usage = PROPERTY_USAGE_DEFAULT
+		},{
+			name = "closed_shape",
+			type = TYPE_BOOL,
+			usage = PROPERTY_USAGE_DEFAULT
+		},{
+			name = "center_pos",
+			type = TYPE_VECTOR2,
 			usage = PROPERTY_USAGE_DEFAULT
 		},{
 			name = "pattern_angle",
 			type = TYPE_FLOAT,
 			hint = PROPERTY_HINT_RANGE,
 			hint_string = "-3.1416, 3.1416",
+			usage = PROPERTY_USAGE_DEFAULT
+		},{
+			name = "symmetric",
+			type = TYPE_BOOL,
+			usage = PROPERTY_USAGE_DEFAULT
+		},{
+			name = "center",
+			type = TYPE_INT,
 			usage = PROPERTY_USAGE_DEFAULT
 		},{
 			name = "iterations",
@@ -226,10 +233,6 @@ func _get_property_list() -> Array:
 		},
 		{ name = "r_randomisation_chances", type = TYPE_FLOAT,
 			hint = PROPERTY_HINT_RANGE, hint_string = "0, 1", usage = PROPERTY_USAGE_DEFAULT },
-		{ name = "r_offset_choice", type = TYPE_STRING, usage = PROPERTY_USAGE_DEFAULT },
-		{ name = "r_offset_x_variation", type = TYPE_VECTOR3, usage = PROPERTY_USAGE_DEFAULT },
-		{ name = "r_offset_y_variation", type = TYPE_VECTOR3, usage = PROPERTY_USAGE_DEFAULT },
-		{ name = "r_center_choice", type = TYPE_STRING, usage = PROPERTY_USAGE_DEFAULT },
 		{ name = "r_symmetry_chances", type = TYPE_FLOAT,
 			hint = PROPERTY_HINT_RANGE, hint_string = "0, 1", usage = PROPERTY_USAGE_DEFAULT },
 		{ name = "r_bullet_choice", type = TYPE_ARRAY, usage = PROPERTY_USAGE_DEFAULT },
@@ -256,4 +259,12 @@ func _get_property_list() -> Array:
 		{ name = "r_cooldown_n_shoot_variation", type = TYPE_VECTOR3, usage = PROPERTY_USAGE_DEFAULT }]
 
 func _init():
-	resource_name = "PatternLine"
+	resource_name = "PatternCustomShape"
+
+#func _get_property_list() -> Array:
+#	return [
+#		{
+#			name = "closed_shape",
+#			type = TYPE_BOOL,
+#			usage = PROPERTY_USAGE_DEFAULT
+#		}]

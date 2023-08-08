@@ -15,12 +15,15 @@ var death_from_collision:bool = true
 var anim_idle_texture:String = "0"
 var anim_spawn_texture:String
 var anim_waiting_texture:String
+var anim_shoot_texture:String
 var anim_delete_texture:String
-var anim_idle_collision:String = "0"
-var anim_spawn_collision:String
-var anim_waiting_collision:String
-var anim_delete_collision:String
+var anim_idle_collision_texture:String = "0"
+var anim_shoot_collision_texture:String
+var anim_spawn_collision_texture:String
+var anim_waiting_collision_texture:String
+var anim_delete_collision_texture:String
 var anim_idle_sfx:int = -1 #TODO change to string
+var anim_shoot_sfx:int = -1
 var anim_spawn_sfx:int = -1
 var anim_waiting_sfx:int = -1
 var anim_delete_sfx:int = -1
@@ -177,27 +180,45 @@ func _get_property_list() -> Array:
 			name = "anim_delete_texture",
 			type = TYPE_STRING,
 			usage = PROPERTY_USAGE_DEFAULT
-		},{
-			name = "anim_idle_collision",
+		},
+		{
+			name = "anim_shoot_texture",
+			type = TYPE_STRING,
+			usage = PROPERTY_USAGE_DEFAULT
+		},
+		{
+			name = "anim_idle_collision_texture",
 			type = TYPE_STRING,
 			usage = PROPERTY_USAGE_DEFAULT
 		},{
-			name = "anim_spawn_collision",
+			name = "anim_spawn_collision_texture",
 			type = TYPE_STRING,
 			usage = PROPERTY_USAGE_DEFAULT
 		},{
-			name = "anim_waiting_collision",
+			name = "anim_waiting_collision_texture",
 			type = TYPE_STRING,
 			usage = PROPERTY_USAGE_DEFAULT
-		},{
-			name = "anim_delete_collision",
+		},
+		{
+			name = "anim_shoot_collision_texture",
+			type = TYPE_STRING,
+			usage = PROPERTY_USAGE_DEFAULT
+		},
+		{
+			name = "anim_delete_collision_texture",
 			type = TYPE_STRING,
 			usage = PROPERTY_USAGE_DEFAULT
 		},{
 			name = "anim_idle_sfx",
 			type = TYPE_INT,
 			usage = PROPERTY_USAGE_DEFAULT
-		},{
+		},
+		{
+			name = "anim_shoot_sfx",
+			type = TYPE_INT,
+			usage = PROPERTY_USAGE_DEFAULT
+		},
+		{
 			name = "anim_spawn_sfx",
 			type = TYPE_INT,
 			usage = PROPERTY_USAGE_DEFAULT

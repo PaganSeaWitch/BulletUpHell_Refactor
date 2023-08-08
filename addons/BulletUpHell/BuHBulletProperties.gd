@@ -39,13 +39,13 @@ func _ready():
 			"homing_list_pos","homing_list_nodes","Advanced Movement","Advanced Scale","Animations","Homing","Special Properties",
 			"Triggers","Destruction","Laser Beam","BulletProps.gd","Random"]:
 				continue
-		elif P in ["a_direction_equation","trigger_container", "anim_spawn_texture","anim_waiting_texture",\
-			"anim_delete_texture","anim_spawn_collision","anim_waiting_collision","anim_delete_collision",\
+		elif P in ["a_direction_equation","trigger_container","anim_shoot_texture", "anim_spawn_texture","anim_waiting_texture",\
+			"anim_delete_texture","anim_spawn_collision_texture","anim_waiting_collision_texture","anim_delete_collision_texture",\
 			"homing_special_target","homing_group"] and props.get(P) == "": continue
 		elif P in ["a_speed_multi_iterations","scale_multi_iterations","spec_bounces","spec_rotating_speed", \
 			"spec_warn","spec_explo","spec_skew","spec_modulate_loop","beam_length_per_ray","spec_trail_length",\
 			"a_curve_movement"] and int(props.get(P)) == int(0): continue
-		elif P in ["anim_idle_sfx","anim_spawn_sfx","anim_waiting_sfx","anim_delete_sfx"] and props.get(P) == -1: continue
+		elif P in ["anim_idle_sfx","anim_spawn_sfx","anim_shoot_sfx", "anim_waiting_sfx","anim_delete_sfx"] and props.get(P) == -1: continue
 		elif P in ["spec_tourment","spec_no_collision","overwrite_groups","homing_mouse"] and props.get(P) == false: continue
 		elif P == "homing_target" and props.get(P) == NodePath(): continue
 		elif P == "homing_position" and props.get(P) == Vector2(): continue
